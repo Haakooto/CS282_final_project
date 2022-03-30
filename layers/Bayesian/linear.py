@@ -12,6 +12,7 @@ class Linear(BaseModule):
         if priors is None: priors = {}
         priors.setdefault("prior_mean", 0)
         priors.setdefault("prior_var", 1)
+        priors.setdefault("posterior_init")
 
         self.W_mu = nn.Parameter(torch.empty(out_nodes, in_nodes, device=self.device))
         self.W_sig = nn.Parameter(torch.empty(out_nodes, in_nodes, device=self.device))

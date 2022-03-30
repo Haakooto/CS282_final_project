@@ -8,7 +8,8 @@ class BaseModule(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        for module in self.modules():
+        for module in self.children():
             x = module(x)
 
         return x
+        
