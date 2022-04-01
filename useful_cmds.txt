@@ -12,7 +12,7 @@ conda deactivate
 
 Add env to jupyter notebook, follow steps
 1. deactive your env
-2. run following: python -m ipykernel install --user --name=firstEnv
+2. run following: python -m ipykernel install --user --name=deep_learning_project
 
 Update environment.yaml
 conda env export --name deep_learning_project --file environment.yml
