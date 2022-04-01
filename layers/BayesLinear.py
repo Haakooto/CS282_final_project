@@ -50,11 +50,11 @@ class Linear(BaseModule):
         # print(Dists[self.prior["dist"]]())
         # exit()
 
-        self.distribution = Dists[self.prior["dist"]](**self.prior["params"])
+        self.distribution = Dists[self.prior["dist"]](**self.prior["params"], device=self.device)
 
-        self.weight = nn.Parameter(torch.empty(out_nodes, in_nodes, device=self.device))
+        self.weight = nn.Parameter(torch.empty(in_nodes, out_nodes, device=self.device, dtype=float))
         if self.use_bias:
-            self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device))
+            self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device, dtype=float))
         else:
             self.register_parameter("bias", None)
 
@@ -78,7 +78,8 @@ class Linear(BaseModule):
         if not self.frozen:
             self.sample()
 
-        return F.linear(x, self.weight, self.bias)
+        # return F.linear(x, self.weight, self.bias)
+        return x @ self.weight + self.bias
 
     def freeze(self):
         """
