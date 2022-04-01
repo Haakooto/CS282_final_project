@@ -56,6 +56,7 @@ class Linear(BaseModule):
         """"
         initial sampling of parameters
         """
+        self.W_mu = self.sample(self.W_mu.size())
         # self.W_mu.data.normal()
         pass
 
@@ -70,18 +71,22 @@ class Linear(BaseModule):
         """
         Pass an input x through layer.
         If layer is 'frozen', compute affine transformation
+        else, resample it
+
         """
         if self.W_eps is None:
             W_ = self.sample(self.W_mu.size())
         else:
-            W_ = self.W_eps * self.W_sig
+            pass
+            # W_ = self.W_eps * self.W_sig
         W = self.W_mu + W_
 
         if self.use_bias:
             if self.b_eps is None:
                 b_ = self.sample(self.b_mu.size())
             else:
-                b_ = self.b_eps * self.b_sig
+                pass
+                # b_ = self.b_eps * self.b_sig
             b = self.b_mu + b_
         else:
             b = None
