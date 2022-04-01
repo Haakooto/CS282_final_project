@@ -1,0 +1,18 @@
+Create env
+conda env create -f environment.yml
+
+Update env
+conda env update --file environment.yml --prune
+
+Activate env
+conda activate deep_learning_project
+
+Deactivate env
+conda deactivate
+
+Add env to jupyter notebook, follow steps
+1. deactive your env
+2. run following: python -m ipykernel install --user --name=firstEnv
+
+Update environment.yaml
+conda env export --name deep_learning_project --file environment.yml
