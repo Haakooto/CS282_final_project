@@ -1,12 +1,85 @@
 import torch
+import torch.nn.functional as F
+from torch.optim import Adam
 from models.Bayes3FC import Bayesian3FC
+from models.F3FC import F3FC
+import pandas as pd
+import numpy as np
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+
+class Data:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+    def __len__(self):
+        return self.x.size(0)
+
+
+data_file = "DATA/carbon_nanotubes.csv"
+data = pd.read_csv(data_file, sep=";", decimal=",")
+target_label = "Calculated atomic coordinates w"
+inputs_labels = [col for col in data.columns if target_label not in col]
+target_labels = [col for col in data.columns if target_label in col]
+X = torch.tensor(data[inputs_labels].values).type(torch.float)
+Y = torch.tensor(data[target_labels].values).type(torch.float)
+
+inds = np.arange(X.size(0))
+torch.manual_seed(12345)
+np.random.seed(12345)
+np.random.shuffle(inds)
+test_size = 0.2
+batch_size = 20
+test_len = int(test_size * X.size(0))
+train_inds, test_inds = inds[test_len:], inds[:test_len]
+
+X_train, X_test = X[train_inds], X[test_inds]
+Y_train, Y_test = Y[train_inds], Y[test_inds]
+
+train_loader = torch.utils.data.DataLoader(Data(X_train, Y_train), batch_size=batch_size)
+# test_loader  = torch.utils.data.DataLoader(Data(X_test, Y_test), batch_size=batch_size)
+
+lr_start = 0.00001
+# model = F3FC(7, 30, 20, 1)
+model = Bayesian3FC(7, 30, 20, 1)
+
+optimizer = Adam(model.parameters(), lr=lr_start)
+
+num_epochs = 30
+pbar = tqdm(range(num_epochs))
+for i in pbar:
+    for bi, (x, y) in enumerate(train_loader):
+        x, y = x.to(device), y.to(device)
+        out = model(x)
+
+        loss = F.mse_loss(out, y)
+        loss.backward()
+        optimizer.step()
+
+    pbar.set_description(f"{loss}")
+
+Y_sample = Y_test.detach().numpy()[:20]
+Y_pred_sample = model(X_test).detach().numpy()[:20]
+plt.plot(Y_sample, "bo-", ms=8, label="target")
+plt.plot(Y_pred_sample, "ro--", ms=4, label="prediction")
+plt.legend()
+plt.show()
+
+# X = data[]
 # from priors.gaussian import gaussian
 
-BNN = Bayesian3FC(20, 40, 40, 20)
-x = torch.randn(20)
-print(x)
-y = BNN(x)
-print(y)
+# BNN = Bayesian3FC(20, 40, 40, 20)
+# x = torch.randn(20)
+# print(x)
+# y = BNN(x)
+# print(y)
 
 # g = gaussian()
 # print(g(x.shape))
