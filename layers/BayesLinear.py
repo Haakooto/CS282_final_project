@@ -1,5 +1,5 @@
 from .template import BaseModule
-from ..priors import implemented_dists as Dists
+from priors import implemented_dists as Dists
 from torch import nn
 from torch.nn import functional as F
 import torch
@@ -43,10 +43,12 @@ class Linear(BaseModule):
         self.frozen = False
 
         if priors is None:
-            priors = {"dist": "gaussian", "params": {"mu": 0, "std": 1}}
+            priors = {"dist": "gaussian", "params": {"mu": 0, "sigma": 1}}
         self.priors = priors
 
-        self.distribution = nn.Parameter(Dists[self.priors["dist"]](**self.priors["params"]))
+        # print(Dists[self.priors["dist"]]())
+        # exit()
+        self.distribution = Dists[self.priors["dist"]](**self.priors["params"])
 
         self.weight = nn.Parameter(torch.empty(out_nodes, in_nodes, device=self.device))
         if self.use_bias:
@@ -55,14 +57,14 @@ class Linear(BaseModule):
             self.register_parameter("bias", None)
         self.sample()
 
-    def sample(self, shape):
+    def sample(self):
         """
         Intended to make it simple to resample parameters when training
         from a preset distribution.
         """
-        self.weight.data = self.distribution(self.W.size())
+        self.weight.data = self.distribution(self.weight.size())
         if self.use_bias:
-            self.bias.data = self.distribution(self.b.size())
+            self.bias.data = self.distribution(self.bias.size())
 
     def forward(self, x):
         """

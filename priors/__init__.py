@@ -1,3 +1,3 @@
-from gaussian import Gaussian
+from .gaussian import Gaussian
 
-implemented_dists = ["gaussian": Gaussian,]
+implemented_dists = {"gaussian": Gaussian,}
