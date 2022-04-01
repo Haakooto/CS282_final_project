@@ -17,7 +17,7 @@ links to repos:
     https://github.com/kumar-shridhar/PyTorch-BayesianCNN
         (from paper 'A Comprehensive guide to Bayesian Convolutional Neural Network with Variational Inference' in our google docs)
 
-Still not too sure how to do the priors.
+Still not too sure how to do the prior.
 Think we should add a class-template for sampling them, and then
 use many subclasses for the specific distributions.
 Then when making a network, we only have to specify name if dist. and parameters it takes.
@@ -34,7 +34,7 @@ Or, a gamma dsitribution: (chosen completely random, disregard the specific pdf,
 
 
 class Linear(BaseModule):
-    def __init__(self, in_nodes, out_nodes, priors=None, use_bias=True):
+    def __init__(self, in_nodes, out_nodes, prior=None, use_bias=True):
         super().__init__()
 
         self.device = torch.device(
@@ -42,19 +42,22 @@ class Linear(BaseModule):
         self.use_bias = use_bias
         self.frozen = False
 
-        if priors is None:
-            priors = {"dist": "gaussian", "params": {"mu": 0, "sigma": 1}}
-        self.priors = priors
+        if prior is None:
+            # prior = {"dist": "gaussian", "params": {"w_mu": 0, "w_sigma": 1, "b_mu": 1, "b_sigma":}}
+            prior = {"dist": "gaussian", "params": {"mu": 0, "sigma": 1}}
+        self.prior = prior
 
-        # print(Dists[self.priors["dist"]]())
+        # print(Dists[self.prior["dist"]]())
         # exit()
-        self.distribution = Dists[self.priors["dist"]](**self.priors["params"])
+
+        self.distribution = Dists[self.prior["dist"]](**self.prior["params"])
 
         self.weight = nn.Parameter(torch.empty(out_nodes, in_nodes, device=self.device))
         if self.use_bias:
             self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device))
         else:
             self.register_parameter("bias", None)
+
         self.sample()
 
     def sample(self):
