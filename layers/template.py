@@ -14,5 +14,14 @@ class BaseModule(nn.Module):
     def forward(self, x):
         for module in self.children():
             x = module(x)
-
         return x
+
+    def freeze(self):
+        for module in self.children():
+            if hasattr(module, "freeze"):
+                module.freeze()
+
+    def unfreeze(self):
+        for module in self.children():
+            if hasattr(module, "unfreeze"):
+                module.unfreeze()
