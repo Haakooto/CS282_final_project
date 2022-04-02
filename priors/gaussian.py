@@ -18,6 +18,7 @@ class Gaussian(nn.Module):
         self.posterior_mu_initial = [mean, std]
         self.posterior_rho_initial = [mean, std]
 
+        # register parameters so torch knos which params need to be optimized during backprop
         self.W_mu = nn.Parameter(torch.empty((out_features, in_features), device=self.device, dtype=dtype))
         self.W_rho = nn.Parameter(torch.empty((out_features, in_features), device=self.device, dtype=dtype))
 
@@ -31,6 +32,9 @@ class Gaussian(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """
+        Fill parameter tensors with data drawn from distribution (normal)
+        """
         self.W_mu.data.normal_(*self.posterior_mu_initial)
         self.W_rho.data.normal_(*self.posterior_rho_initial)
 
@@ -58,4 +62,7 @@ class Gaussian(nn.Module):
 
     def __str__(self):
         return "A gaussian"
+
+    def kl_loss(self):
+        return 0
 
