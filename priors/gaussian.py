@@ -18,8 +18,8 @@ class Gaussian(nn.Module):
         self.posterior_mu_initial = [mean, std]
         self.posterior_rho_initial = [mean, std]
 
-        self.W_mu = nn.Parameter(torch.empty((in_features, out_features), device=self.device, dtype=dtype))
-        self.W_rho = nn.Parameter(torch.empty((in_features, out_features), device=self.device, dtype=dtype))
+        self.W_mu = nn.Parameter(torch.empty((out_features, in_features), device=self.device, dtype=dtype))
+        self.W_rho = nn.Parameter(torch.empty((out_features, in_features), device=self.device, dtype=dtype))
 
         if self.use_bias:
             self.bias_mu = nn.Parameter(torch.empty((out_features), device=self.device, dtype=dtype))
@@ -58,5 +58,4 @@ class Gaussian(nn.Module):
 
     def __str__(self):
         return "A gaussian"
-
 
