@@ -42,6 +42,9 @@ class BLinear(BaseModule):
         self.use_bias = use_bias
         self.frozen = False
 
+        self.inp = in_nodes
+        self.out = out_nodes
+
         if prior is None:
             prior = {"dist": "gaussian", "params": {"mean": 0., "std": 1.}}
         self.prior = prior
@@ -71,3 +74,10 @@ class BLinear(BaseModule):
         Unfreezes the epsilon_parameters, such that the model resamples every time.
         """
         self.distribution.frozen = False
+
+    def __str__(self):
+        return f"Bayesian Linear (in: {self.inp}, out: {self.out}) layer with {self.prior['dist']}: {self.prior['params']}"
+
+    def kl_loss(self):
+        return self.distribution.kl_loss()
+
