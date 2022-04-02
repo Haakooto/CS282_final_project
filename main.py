@@ -44,18 +44,17 @@ X_train, X_test = X[train_inds], X[test_inds]
 Y_train, Y_test = Y[train_inds], Y[test_inds]
 
 train_loader = torch.utils.data.DataLoader(Data(X_train, Y_train), batch_size=batch_size)
-# test_loader  = torch.utils.data.DataLoader(Data(X_test, Y_test), batch_size=batch_size)
 
-lr_start = 0.00001
+lr_start = 0.0001
 # model = F3FC(7, 30, 20, 1)
-model = Bayesian3FC(7, 30, 20, 1)
-
+model = Bayesian3FC(7, 30, 20, 1, prior={"dist": "gaussian", "params": {"mean": 0, "std": 0.01}})
 optimizer = Adam(model.parameters(), lr=lr_start)
 
 num_epochs = 30
 pbar = tqdm(range(num_epochs))
+
 for i in pbar:
-    for bi, (x, y) in enumerate(train_loader):
+    for batch_index, (x, y) in enumerate(train_loader):
         x, y = x.to(device), y.to(device)
         out = model(x)
 
@@ -65,25 +64,17 @@ for i in pbar:
 
     pbar.set_description(f"{loss}")
 
+# plt.plot(model.fc1.means)
+# plt.show()
+# plt.plot(model.fc2.means)
+# plt.show()
+# plt.plot(model.fc3.means)
+# plt.show()
+
 Y_sample = Y_test.detach().numpy()[:20]
 Y_pred_sample = model(X_test).detach().numpy()[:20]
 plt.plot(Y_sample, "bo-", ms=8, label="target")
 plt.plot(Y_pred_sample, "ro--", ms=4, label="prediction")
 plt.legend()
 plt.show()
-
-# X = data[]
-# from priors.gaussian import gaussian
-
-# BNN = Bayesian3FC(20, 40, 40, 20)
-# x = torch.randn(20)
-# print(x)
-# y = BNN(x)
-# print(y)
-
-# g = gaussian()
-# print(g(x.shape))
-
-# BNN = Bayesian3FC(features=20, n1=10, n2=10, n3=10, classes=1)
-# print(y)
 
