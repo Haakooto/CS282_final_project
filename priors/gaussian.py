@@ -54,7 +54,7 @@ class Gaussian(nn.Module):
             weight = self.W_mu
             bias = self.bias_mu if self.use_bias else None
 
-        return weight, bias
+        return weight.to(torch.double), bias.to(torch.double)
 
     def __str__(self):
         return "A gaussian"

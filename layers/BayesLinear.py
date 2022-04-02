@@ -1,3 +1,4 @@
+from zmq import device
 from .template import BaseModule
 from priors import implemented_dists as Dists
 from torch import nn
@@ -33,12 +34,11 @@ Or, a gamma dsitribution: (chosen completely random, disregard the specific pdf,
 """
 
 
-class Linear(BaseModule):
+class BLinear(BaseModule):
     def __init__(self, in_nodes, out_nodes, prior=None, use_bias=True):
         super().__init__()
 
-        self.device = torch.device(
-            "cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.device = torch.device("cpu")
         self.use_bias = use_bias
         self.frozen = False
 
