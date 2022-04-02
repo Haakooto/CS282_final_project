@@ -43,49 +43,11 @@ class Linear(BaseModule):
         self.frozen = False
 
         if prior is None:
-            # prior = {"dist": "gaussian", "params": {"w_mu": 0, "w_sigma": 1, "b_mu": 1, "b_sigma":}}
             prior = {"dist": "gaussian", "params": {"mean": 0., "std": 1.}}
         self.prior = prior
 
-        # print(Dists[self.prior["dist"]]())
-        # exit()
-
         self.distribution = Dists[self.prior["dist"]](in_nodes, out_nodes, **self.prior["params"], device=self.device)
-
-        # for key, val in self.prior["params"].items():
-        #     print(key)
-        #     print(type(key))
-        #     print(val)
-        #     print(type(val))
-        #     print(torch.tensor(val))
-        #     test = nn.Parameter(torch.randn((5, 5)))
-
-        # print(test)
-        # exit()
-        # self.params = {key: nn.Parameter(torch.tensor(
-        #     val)) for key, val in self.prior["params"].items()}
-        # print(self.params)
-
-        # exit()
-
-        # self.weight = nn.Parameter(torch.empty(
-        #     in_nodes, out_nodes, device=self.device, dtype=float))
-        # if self.use_bias:
-        #     self.bias = nn.Parameter(torch.empty(
-        #         out_nodes, device=self.device, dtype=float))
-        # else:
-        #     self.register_parameter("bias", None)
-
-        # self.sample()
-
-    # def sample(self):
-    #     """
-    #     Intended to make it simple to resample parameters when training
-    #     from a preset distribution.
-    #     """
-    #     self.weight.data = self.distribution(self.params, self.weight.size())
-    #     if self.use_bias:
-    #         self.bias.data = self.distribution(self.params, self.bias.size())
+        # self.means = []
 
     def forward(self, x):
         """
@@ -94,15 +56,14 @@ class Linear(BaseModule):
         else, resample it
         """
         weight, bias = self.distribution()
+        # self.means.append(weight.std())
 
-        # return F.linear(x, weight, bias)
-        return x @ weight + bias
+        return F.linear(x, weight, bias)
 
     def freeze(self):
         """
         Fix the epsilon_parameters, such that the model always returns the same output for a given input
         """
-        # self.sample()
         self.distribution.frozen = True
 
     def unfreeze(self):
