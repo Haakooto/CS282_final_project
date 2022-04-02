@@ -49,21 +49,24 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, seed=1234
     return train_loader, test_data
 
 
-def train_model(model, optimizer, train_loader, device, num_epochs=30):
+def train_model(model, optimizer, train_loader, device, loss, num_epochs=30):
     num_epochs = num_epochs
+    if loss == 'mse':
+        Loss_FN = torch.nn.MSELoss()
+    else:
+        print('Not Recgonized Loss Type')
+        return
     pbar = tqdm(range(num_epochs))
     for i in pbar:
         for bi, (x, y) in enumerate(train_loader):
             x, y = x.to(device), y.to(device)
             out = model(x)
 
-            loss = F.mse_loss(out, y)
+            loss = Loss_FN(out, y)
             loss.backward()
             optimizer.step()
 
         pbar.set_description(f"{loss}")
-
-
 
 
 
