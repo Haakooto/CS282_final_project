@@ -1,4 +1,4 @@
-from layers import *
+from layers import * #This imports all the functions of all programs in the layers folder.
 from torch import nn
 
 
@@ -10,7 +10,7 @@ class Bayesian3FC(BaseModule):
     def __init__(self, features=2, n1=2, n2=2, classes=1, prior=None):
         super().__init__()
 
-        self.fc1       = BLinear(features, n1, prior=prior)
+        self.fc1       = BLinear(features, n1, prior=prior) #Here we use the BLinear from layers/__init__.py, that was imported.
         self.non_lin1  = nn.ReLU()
         self.fc2       = BLinear(n1, n2, prior=prior)
         self.non_lin2  = nn.ReLU()

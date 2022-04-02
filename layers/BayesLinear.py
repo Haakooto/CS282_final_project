@@ -34,7 +34,7 @@ Or, a gamma dsitribution: (chosen completely random, disregard the specific pdf,
 """
 
 
-class Linear(BaseModule):
+class BLinear(BaseModule):
     def __init__(self, in_nodes, out_nodes, prior=None, use_bias=True):
         super().__init__()
 
