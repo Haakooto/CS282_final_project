@@ -10,8 +10,8 @@ class Bayesian3FC(BaseModule):
     def __init__(self, features=2, n1=2, n2=2, classes=1, prior=None):
         super().__init__()
 
-        self.fc1       = BLinear(features, n1 prior=prior)
+        self.fc1       = BLinear(features, n1, prior=prior)
         self.non_lin1  = nn.ReLU()
-        self.fc2       = BLinear(n1, n2 prior=prior)
+        self.fc2       = BLinear(n1, n2, prior=prior)
         self.non_lin2  = nn.ReLU()
-        self.fc3       = BLinear(n2, classes prior=prior)
+        self.fc3       = BLinear(n2, classes, prior=prior)

@@ -1,3 +1,4 @@
+from zmq import device
 from .template import BaseModule
 from priors import implemented_dists as Dists
 from torch import nn
@@ -37,8 +38,7 @@ class Linear(BaseModule):
     def __init__(self, in_nodes, out_nodes, prior=None, use_bias=True):
         super().__init__()
 
-        self.device = torch.device(
-            "cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.device = torch.device("cpu")
         self.use_bias = use_bias
         self.frozen = False
 
@@ -52,9 +52,9 @@ class Linear(BaseModule):
 
         self.distribution = Dists[self.prior["dist"]](**self.prior["params"], device=self.device)
 
-        self.weight = nn.Parameter(torch.empty(in_nodes, out_nodes, device=self.device, dtype=float))
+        self.weight = nn.Parameter(torch.empty(in_nodes, out_nodes, device=self.device))
         if self.use_bias:
-            self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device, dtype=float))
+            self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device))
         else:
             self.register_parameter("bias", None)
 
@@ -65,9 +65,9 @@ class Linear(BaseModule):
         Intended to make it simple to resample parameters when training
         from a preset distribution.
         """
-        self.weight.data = self.distribution(self.weight.size())
+        self.weight.data = self.distribution(self.weight.size()).to(self.device).to(torch.double)
         if self.use_bias:
-            self.bias.data = self.distribution(self.bias.size())
+            self.bias.data = self.distribution(self.bias.size()).to(self.device).to(torch.double)
 
     def forward(self, x):
         """
