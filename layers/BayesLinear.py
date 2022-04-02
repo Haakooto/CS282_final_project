@@ -50,7 +50,7 @@ class Linear(BaseModule):
         # print(Dists[self.prior["dist"]]())
         # exit()
 
-        self.distribution = Dists[self.prior["dist"]](device=self.device)
+        self.distribution = Dists[self.prior["dist"]](in_nodes, out_nodes, **self.prior["params"], device=self.device)
 
         # for key, val in self.prior["params"].items():
         #     print(key)
@@ -62,27 +62,30 @@ class Linear(BaseModule):
 
         # print(test)
         # exit()
-        self.params = {key: nn.Parameter(torch.tensor(val)) for key, val in self.prior["params"].items()}
+        # self.params = {key: nn.Parameter(torch.tensor(
+        #     val)) for key, val in self.prior["params"].items()}
         # print(self.params)
 
         # exit()
 
-        self.weight = nn.Parameter(torch.empty(in_nodes, out_nodes, device=self.device, dtype=float))
-        if self.use_bias:
-            self.bias = nn.Parameter(torch.empty(out_nodes, device=self.device, dtype=float))
-        else:
-            self.register_parameter("bias", None)
+        # self.weight = nn.Parameter(torch.empty(
+        #     in_nodes, out_nodes, device=self.device, dtype=float))
+        # if self.use_bias:
+        #     self.bias = nn.Parameter(torch.empty(
+        #         out_nodes, device=self.device, dtype=float))
+        # else:
+        #     self.register_parameter("bias", None)
 
-        self.sample()
+        # self.sample()
 
-    def sample(self):
-        """
-        Intended to make it simple to resample parameters when training
-        from a preset distribution.
-        """
-        self.weight.data = self.distribution(self.params, self.weight.size())
-        if self.use_bias:
-            self.bias.data = self.distribution(self.params, self.bias.size())
+    # def sample(self):
+    #     """
+    #     Intended to make it simple to resample parameters when training
+    #     from a preset distribution.
+    #     """
+    #     self.weight.data = self.distribution(self.params, self.weight.size())
+    #     if self.use_bias:
+    #         self.bias.data = self.distribution(self.params, self.bias.size())
 
     def forward(self, x):
         """
@@ -92,18 +95,18 @@ class Linear(BaseModule):
         """
         weight, bias = self.distribution()
 
-        # return F.linear(x, self.weight, self.bias)
+        # return F.linear(x, weight, bias)
         return x @ weight + bias
 
     def freeze(self):
         """
         Fix the epsilon_parameters, such that the model always returns the same output for a given input
         """
-        self.sample()
-        self.frozen = True
+        # self.sample()
+        self.distribution.frozen = True
 
     def unfreeze(self):
         """
         Unfreezes the epsilon_parameters, such that the model resamples every time.
         """
-        self.frozen = False
+        self.distribution.frozen = False

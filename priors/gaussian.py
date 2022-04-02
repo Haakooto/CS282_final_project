@@ -7,21 +7,23 @@ class Gaussian(nn.Module):
     Simple Gaussian multivariate prior without correlation.
     """
 
-    def __init__(self, in_features, out_features, prior_mu=0, prior_std=1, shape=None, device=None, dtype=None):
+    def __init__(self, in_features, out_features, mean=0, std=1, use_bias=True, device=None, dtype=None):
         super().__init__()
         self.device = device
+        self.frozen = False
+        self.use_bias = True
 
-        self.prior_mu = prior_mu
-        self.prior_sigma = prior_std
-        self.posterior_mu_initial = [prior_mu, prior_std]
-        self.posterior_rho_initial = [prior_mu, prior_std]
+        self.prior_mu = mean
+        self.prior_sigma = std
+        self.posterior_mu_initial = [mean, std]
+        self.posterior_rho_initial = [mean, std]
 
-        self.W_mu = nn.Parameter(torch.empty((in_features, out_features), device=self.device))
-        self.W_rho = nn.Parameter(torch.empty((in_features, out_features), device=self.device))
+        self.W_mu = nn.Parameter(torch.empty((in_features, out_features), device=self.device, dtype=dtype))
+        self.W_rho = nn.Parameter(torch.empty((in_features, out_features), device=self.device, dtype=dtype))
 
         if self.use_bias:
-            self.bias_mu = nn.Parameter(torch.empty((out_features), device=self.device))
-            self.bias_rho = nn.Parameter(torch.empty((out_features), device=self.device))
+            self.bias_mu = nn.Parameter(torch.empty((out_features), device=self.device, dtype=dtype))
+            self.bias_rho = nn.Parameter(torch.empty((out_features), device=self.device, dtype=dtype))
         else:
             self.register_parameter('bias_mu', None)
             self.register_parameter('bias_rho', None)
