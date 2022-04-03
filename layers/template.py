@@ -17,8 +17,8 @@ class BaseModule(nn.Module):
 
         kl = 0
         for layer in self.layers:
-            if hasattr(layer, "kl_loss")
-            kl += layer.kl_loss()
+            if hasattr(layer, "kl_loss"):
+                kl += layer.kl_loss()
 
         return x, kl
 
