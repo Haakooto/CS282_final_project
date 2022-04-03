@@ -22,7 +22,7 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, seed=1234
     np.random.seed(seed)
 
     # read data from file
-    data_file = "DATA/carbon_nanotubes.csv"
+    data_file = "DATA/carbon_nanotubes_train.csv"
     data = pd.read_csv(data_file, sep=";", decimal=",")
 
     if target_label is None:
