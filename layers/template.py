@@ -11,10 +11,13 @@ class BaseModule(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, x):
+    def forward(self, x, do_kl=True):
         for layer in self.layers:
             x = layer(x)
 
+        if not do_kl:
+            return x
+            
         kl = 0
         for layer in self.layers:
             if hasattr(layer, "kl_loss"):
