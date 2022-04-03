@@ -64,5 +64,12 @@ class Gaussian(nn.Module):
         return "A gaussian"
 
     def kl_loss(self):
-        return 0
+        kl = kl_normal(self.prior_mu, self.prior_sigma, self.W_mu, self.W_sigma)
+        if self.use_bias:
+            kl += kl_normal(self.prior_mu, self.prior_sigma, self.bias_mu, self.bias_sigma)
+        return kl
+
+
+def kl_normal(self, mu_p, sig_p, mu_q, sig_q):
+    return 0.5 * (2 * torch.log(sig_p / sig_q) - 1 + (sig_q / sig_p).pow(2) + ((mu_p - mu_q) / sig_p).pow(2)).sum()
 
