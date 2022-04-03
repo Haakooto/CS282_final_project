@@ -12,16 +12,22 @@ class BaseModule(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        for module in self.children():
-            x = module(x)
-        return x
+        for layer in self.layers:
+            x = layer(x)
+
+        kl = 0
+        for layer in self.layers:
+            if hasattr(layer, "kl_loss"):
+                kl += layer.kl_loss()
+
+        return x, kl
 
     def freeze(self):
-        for module in self.children():
-            if hasattr(module, "freeze"):
-                module.freeze()
+        for layer in self.layers:
+            if hasattr(layer, "freeze"):
+                layer.freeze()
 
     def unfreeze(self):
-        for module in self.children():
-            if hasattr(module, "unfreeze"):
-                module.unfreeze()
+        for layer in self.layers:
+            if hasattr(layer, "unfreeze"):
+                layer.unfreeze()

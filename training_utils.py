@@ -60,7 +60,7 @@ def train_model(model, optimizer, train_loader, device, loss, num_epochs=30):
     for i in pbar:
         for bi, (x, y) in enumerate(train_loader):
             x, y = x.to(device), y.to(device)
-            out = model(x)
+            out, kl = model(x)
 
             loss = Loss_FN(out, y)
             loss.backward()
