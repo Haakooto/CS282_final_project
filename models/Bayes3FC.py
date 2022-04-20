@@ -3,6 +3,7 @@ from layers import *
 from torch import nn
 
 
+
 class Bayesian3FC(BaseModule):
     """
     Simple implementation of a 3-layered FC Bayesian net with ReLU as non-linearity
@@ -11,13 +12,15 @@ class Bayesian3FC(BaseModule):
 
     def __init__(self, features=2, n1=2, n2=2, classes=1, prior=None):
         super().__init__()
+        self.total_kl_div = 0
+        # self.data =
 
         # Here we use the BLinear from layers/__init__.py, that was imported.
-        fc1 = BLinear(features, n1, prior=prior)
+        fc1 = BLinear(features, n1, self, 1, prior=prior)
         non_lin1 = nn.ReLU()
-        fc2 = BLinear(n1, n2, prior=prior)
+        fc2 = BLinear(n1, n2, self, 2, prior=prior)
         non_lin2 = nn.ReLU()
-        fc3 = BLinear(n2, classes, prior=prior)
+        fc3 = BLinear(n2, classes, self, 3, prior=prior)
 
         self.layers = nn.Sequential(fc1, non_lin1, fc2, non_lin2, fc3)
 

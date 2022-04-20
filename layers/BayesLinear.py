@@ -35,7 +35,7 @@ Or, a gamma dsitribution: (chosen completely random, disregard the specific pdf,
 
 
 class BLinear(BaseModule):
-    def __init__(self, in_nodes, out_nodes, prior=None, use_bias=True):
+    def __init__(self, in_nodes, out_nodes, parent, prior=None, use_bias=True):
         super().__init__()
 
         self.device = torch.device("cpu")
@@ -46,10 +46,10 @@ class BLinear(BaseModule):
         self.out = out_nodes
 
         if prior is None:
-            prior = {"dist": "gaussian", "params": {"mean": 0., "std": 1.}}
+            prior = {"dist": "gaussian", "params": {"mean": 0., "std": 0.001}}
         self.prior = prior
 
-        self.distribution = Dists[self.prior["dist"]](in_nodes, out_nodes, **self.prior["params"], device=self.device)
+        self.distribution = Dists[self.prior["dist"]](in_nodes, out_nodes, parent, **self.prior["params"], device=self.device)
         # self.means = []
 
     def forward(self, x):
