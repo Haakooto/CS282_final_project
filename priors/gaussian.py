@@ -7,7 +7,7 @@ class Gaussian(nn.Module):
     Simple Gaussian multivariate prior without correlation.
     """
 
-    def __init__(self, in_features, out_features, mean=0, std=1, use_bias=True, device=None, dtype=None):
+    def __init__(self, in_features, out_features, mean=0, std=0.001, use_bias=True, device=None, dtype=None):
         super().__init__()
         self.device = device
         self.frozen = False
@@ -16,7 +16,7 @@ class Gaussian(nn.Module):
         self.prior_mu = mean
         self.prior_sigma = std
         self.posterior_mu_initial = [mean, std]
-        self.posterior_rho_initial = [mean, std]
+        self.posterior_rho_initial = [-3, std]
 
         # register parameters so torch knos which params need to be optimized during backprop
         self.W_mu = nn.Parameter(torch.empty((out_features, in_features), device=self.device, dtype=dtype))

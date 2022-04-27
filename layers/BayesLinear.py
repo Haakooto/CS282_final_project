@@ -46,7 +46,7 @@ class BLinear(BaseModule):
         self.out = out_nodes
 
         if prior is None:
-            prior = {"dist": "gaussian", "params": {"mean": 0., "std": 1.}}
+            prior = {"dist": "gaussian", "params": {"mean": 0., "std": .01}}
         self.prior = prior
 
         self.distribution = Dists[self.prior["dist"]](in_nodes, out_nodes, **self.prior["params"], device=self.device)
