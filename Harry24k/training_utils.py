@@ -30,8 +30,8 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, seed=1234
     # columns to use as input and target
     inputs_labels = [col for col in data.columns if target_label not in col]
     target_labels = [col for col in data.columns if target_label in col]
-    X = torch.tensor(data[inputs_labels].values).type(torch.double)  # enforce datatype as doubles
-    Y = torch.tensor(data[target_labels].values).type(torch.double)
+    X = torch.tensor(data[inputs_labels].values).float()  # enforce datatype as doubles
+    Y = torch.tensor(data[target_labels].values).float()
 
     # random shuffle of data
     inds = np.arange(X.size(0))
@@ -49,24 +49,21 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, seed=1234
     return train_loader, test_data
 
 
-def train_model(model, optimizer, train_loader, device, num_epochs=30):
-    # num_epochs = num_epochs
-    # if loss == 'mse':
-    #     Loss_FN = torch.nn.MSELoss()
-    # else:
-    #     print('Not Recgonized Loss Type')
-    #     return
+def train_model(model, optimizer, train_loader, device, loss, num_epochs=30):
+    num_epochs = num_epochs
+    if loss == 'mse':
+        Loss_FN = torch.nn.MSELoss()
+    else:
+        print('Not Recgonized Loss Type')
+        return
     pbar = tqdm(range(num_epochs))
     for i in pbar:
         for bi, (x, y) in enumerate(train_loader):
             x, y = x.to(device), y.to(device)
-            out = model(x)
-            kl = model.total_kl_div
+            out, kl = model(x)
 
-            loss = -torch.distributions.Normal(out, .1).log_prob(y).sum() + kl
+            loss = Loss_FN(out, y)
             loss.backward()
-
-            model.total_kl_div = 0
             optimizer.step()
 
         pbar.set_description(f"{loss}")
