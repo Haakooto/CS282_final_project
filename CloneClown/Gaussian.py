@@ -6,7 +6,7 @@ from torch import nn
 class Gauss(nn.Module):
     def __init__(self, inn, out, *, mean, std, bias, kl_func):
         super().__init__()
-
+        # should not be any surprises here compared with our earlier code
         self.use_bias = bias
         self.kl_func = kl_func
         self.unfrozen = True
@@ -33,6 +33,7 @@ class Gauss(nn.Module):
         self.reset()
 
     def reset(self):
+        # initi weights with data
         self.weight_mean.data.normal_(*self.post_mean)
         self.weight_rho.data.normal_(*self.post_rho)
         if self.use_bias:
@@ -40,6 +41,7 @@ class Gauss(nn.Module):
             self.bias_rho.data.zero_()
 
     def __call__(self):
+        # resample weights from distribution, just as before
         weight_std = torch.log1p(torch.exp(self.weight_rho))
         weight_eps = torch.randn_like(weight_std)
         weight = self.weight_mean + weight_eps * weight_std * self.unfrozen
