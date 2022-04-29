@@ -1,0 +1,35 @@
+name: NONCUDA
+channels:
+  - pytorch
+  - anaconda
+  - defaults
+dependencies:
+- pytorch= 1.11
+- pandas = 1.3
+- tqdm   = 4.62
+- matplotlib= 3.4
+- pip
+- pip:
+  - jupyter-client                    
+  - jupyter-console                   
+  - jupyter-contrib-core              
+  - jupyter-contrib-nbextensions      
+  - jupyter-core                      
+  - jupyter-highlight-selected-word   
+  - jupyter-latex-envs                
+  - jupyter-nbextensions-configurator 
+  - jupyter-server                   
+  - jupyter-server-mathjax            
+  - jupyter-telemetry                 
+  - jupyterhub                        
+  - jupyterlab                        
+  - jupyterlab-git                   
+  - jupyterlab-pygments               
+  - jupyterlab-server                 
+  - jupyterlab-widgets                
+  - IPy                               
+  - ipydatetime                       
+  - ipykernel                         
+  - ipython                          
+  - ipython-genutils                  
+  - ipywidgets                        
