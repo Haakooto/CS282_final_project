@@ -4,11 +4,11 @@ from torch import nn
 
 
 class Gauss(nn.Module):
-    def __init__(self, inn, out, *, mean, std, bias, kl_func):
+    def __init__(self, inn, out, *, mean, std, bias, kl_adder):
         super().__init__()
         # should not be any surprises here compared with our earlier code
         self.use_bias = bias
-        self.kl_func = kl_func
+        self.kl_adder = kl_adder
         self.unfrozen = True
 
         device = torch.device("cpu")
@@ -30,6 +30,7 @@ class Gauss(nn.Module):
             self.register_parmeter("bias_mean", None)
             self.register_parmeter("bias_rho", None)
 
+        self.prior = dist.Normal(0, 1)
         self.reset()
 
     def reset(self):
@@ -64,18 +65,18 @@ class Gauss(nn.Module):
         return weight, bias
 
     def kl_loss(self, z, mu, rho):
-        log_prior = dist.Normal(0, 1).log_prob(z)  # 0 and 1 should be self.prior_mean and self.prior_std, right? as this is what we have assumed as the prior in the constructor...
+        log_prior = self.prior.log_prob(z)
         sigma = torch.log1p(torch.exp(rho))
         log_pq = dist.Normal(mu, sigma).log_prob(z)
-        self.kl_func( (log_pq - log_prior).sum() )
+        self.kl_adder( (log_pq - log_prior).sum() )
 
 
 # class Uniform(nn.Module):
 #     # dont @ me
-#     def __init__(self, inn, out, *, min, max, bias, kl_func):
+#     def __init__(self, inn, out, *, min, max, bias, kl_adder):
 
 #         self.use_bias = bias
-#         self.kl_func = kl_func
+#         self.kl_adder = kl_adder
 #         self.unfrozen = True
 
 #         device = torch.device("cpu")

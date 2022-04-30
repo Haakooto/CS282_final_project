@@ -8,7 +8,7 @@ Distributions = {"gauss": Gauss}
 
 
 class Linear(nn.Module):
-    def __init__(self, *, inn, out, prior, kl_func, use_bias=True):
+    def __init__(self, *, inn, out, prior, kl_adder, use_bias=True):
         super().__init__()
 
         self.use_bias = use_bias
@@ -17,7 +17,7 @@ class Linear(nn.Module):
 
         self.prior = prior
         dist = Distributions[prior["dist"]]
-        self.sample = dist(inn, out, **self.prior["params"], bias=self.use_bias, kl_func=kl_func)
+        self.sample = dist(inn, out, **self.prior["params"], bias=self.use_bias, kl_adder=kl_adder)
 
     def forward(self, x):
         weight, bias = self.sample()

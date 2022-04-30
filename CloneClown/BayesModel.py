@@ -2,6 +2,7 @@ from BayesLinear import Linear as BayesLinear
 from torch import nn
 import torch
 
+
 class FullyConnected(nn.Module):
     # Simple frequentist neural network
     def __init__(self, *, features, classes, hiddens, nonlin="ReLU", use_bias=True):
@@ -42,7 +43,7 @@ class BayesFullyConnected(nn.Module):
             layers += [BayesLinear(inn=prev,
                                    out=next,
                                    prior=prior,
-                                   kl_func=self.add_kl_div,
+                                   kl_adder=self.add_kl_div,
                                    use_bias=True,
                                    ),
                        self.act(),
@@ -52,7 +53,7 @@ class BayesFullyConnected(nn.Module):
                                     BayesLinear(inn=nodes[-2],
                                                 out=nodes[-1],
                                                 prior=prior,
-                                                kl_func=self.add_kl_div,
+                                                kl_adder=self.add_kl_div,
                                                 use_bias=True,
                                                 ),
                                     )
@@ -60,8 +61,6 @@ class BayesFullyConnected(nn.Module):
     def forward(self, x, test=False):
         for layer in self.layers:
             x = layer(x)
-            # if test:
-            #     print(layer.__class__.__name__, x.mean().data, x.std().data)
         return x
 
     def add_kl_div(self, kl_div):
