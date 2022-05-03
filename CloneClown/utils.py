@@ -23,10 +23,6 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, scale=Tru
     data_file = "DATA/carbon_nanotubes.csv"
     data = pd.read_csv(data_file, sep=";", decimal=",")
 
-    if scale:
-        # standard scaling
-        data = (data - data.mean(axis=0)) / data.std(axis=0)
-
     if target_label is None:
         target_label = "Calculated atomic coordinates w"
     # columns to use as input and target
@@ -45,6 +41,13 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, scale=Tru
     # splint in train and test
     X_train, X_test = X[train_inds], X[test_inds]
     Y_train, Y_test = Y[train_inds], Y[test_inds]
+
+    if scale:
+        # standard scaling
+        X_train = (X_train - X_train.mean(axis=0)) / X_train.std(axis=0)
+        Y_train = (Y_train - Y_train.mean(axis=0)) / Y_train.std(axis=0)
+        X_test = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0)
+        Y_test = (Y_test - Y_test.mean(axis=0)) / Y_test.std(axis=0)
 
     # Package data for easy training and testing
     train_loader = torch.utils.data.DataLoader(
