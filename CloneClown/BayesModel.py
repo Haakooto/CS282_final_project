@@ -40,14 +40,16 @@ class BayesFullyConnected(nn.Module):
             self.dtype = torch.double
 
         self.total_kl_div = 0
-        self.unfrozen = True
 
+        # Everything that has to do with the distribution is specified in this dict
+        # The default values are here. Scale of 1 works bad, .1 is good
         if prior is None:
             prior = {}
         prior.setdefault("dist",     "normal")
         prior.setdefault("loc",      0)
         prior.setdefault("scale",    1)
         prior.setdefault("use_bias", True)
+        self.prior = prior
 
         self.activation = nonlin
 
@@ -55,7 +57,7 @@ class BayesFullyConnected(nn.Module):
 
         layers = []
         for prev, next in zip(nodes[:-2], nodes[1:-1]):
-            layers += [BayesLinear(**prior,
+            layers += [BayesLinear(**self.prior,  # double star means unpacking the dictionat such that each key-value pair becomes a keyword argumented pass, for increased readability and ease
                                    inn=prev,
                                    out=next,
                                    device=self.device,
@@ -65,7 +67,7 @@ class BayesFullyConnected(nn.Module):
                        ]
 
         self.layers = nn.Sequential(*layers,
-                                    BayesLinear(**prior,
+                                    BayesLinear(**self.prior,
                                                 inn=nodes[-2],
                                                 out=nodes[-1],
                                                 device=self.device,
@@ -77,17 +79,17 @@ class BayesFullyConnected(nn.Module):
         for layer in self.layers:
             x = layer(x)
 
-        if train:
+        if train:  # To reduce computation during testing, only calculate kl when nessissary
             for layer in self.layers:
-                if hasattr(layer, "kl_div"):
-                    self.total_kl_div += layer.kl_div().sum(-1).mean()
+                if hasattr(layer, "kl_div"):  # this method is defined only for our BayesLinear
+                    self.total_kl_div += layer.kl_div().sum(-1).mean()  # not sure why the sum.mean ¯\_(ツ)_/¯
         return x
 
     def kl_reset(self):
         """
         Retrns the kl_div and resets it to zero
         """
-        tmp = self.total_kl_div * self.unfrozen
+        tmp = self.total_kl_div
         self.total_kl_div = 0
         return tmp
 
