@@ -24,7 +24,8 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, seed=1234
     # read data from file
     data_file = "DATA/carbon_nanotubes.csv"
     data = pd.read_csv(data_file, sep=";", decimal=",")
-
+    data = (data-data.mean(axis=0))/data.std(axis=0)
+    
     if target_label is None:
         target_label = "Calculated atomic coordinates w"
     # columns to use as input and target
