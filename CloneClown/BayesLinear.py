@@ -1,25 +1,91 @@
-from Gaussian import Gauss#, Uniform
 from torch import nn
 import torch.nn.functional as F
 import torch
-
-# Distributions = {"gauss": Gauss, "uniform": Uniform}
-Distributions = {"gauss": Gauss}
+from hyperspherical_uniform import HypersphericalUniform
+from von_mises_fisher import VonMisesFisher
 
 
 class Linear(nn.Module):
-    def __init__(self, *, inn, out, prior, kl_adder, use_bias=True):
+    def __init__(self, *, inn, out, loc=0, scale=1, dist="normal", device=None, dtype=None, use_bias=True):
         super().__init__()
 
+        self.device = device
+        self.dtype = dtype
         self.use_bias = use_bias
 
-        assert prior, "Please specify distribution!"
+        self.prior_loc = loc
+        self.prior_scale = scale
+        self.dist = dist
 
-        self.prior = prior
-        dist = Distributions[prior["dist"]]
-        self.sample = dist(inn, out, **self.prior["params"], bias=self.use_bias, kl_adder=kl_adder)
+        self.weight_loc = nn.Parameter(torch.zeros((out, inn), device=self.device, dtype=self.dtype))
+        self.weight_rho = nn.Parameter(torch.zeros((out, inn), device=self.device, dtype=self.dtype))
+
+        """ # ! Using non-bayesian biases
+        if self.use_bias:
+            self.bias_loc = nn.Parameter(torch.zeros(out, device=self.device, dtype=self.dtype))
+            self.bias_rho = nn.Parameter(torch.zeros(out, device=self.device, dtype=self.dtype))
+        else:
+            self.register_parmeter("bias_loc", None)
+            self.register_parmeter("bias_rho", None)
+        """ # ! Swap with the following if bayesian biases are wanted. Then self.distribution will have to be changed dough, so please heavily consider is this is actually nessissary, or only done for shits and giggles and you think it's fun fucking with my night-sleep quality. Tbf, is shouldn't be too bad, but its still annoying and I have now gone back and forth for almost 2 hours about how the code should be structued in general, and that function has been very centrial in exactly why it took this long, and I'm tired and only writing this long ass-comment to further procrastinating writing the final version that will magically work and win us the nobel price in economics in 5 years. Yes, economics. Because there is no nobel price for stiring a pile of shit until it accurately tells you the age of your dog, which lets be honest, is all we are doing. No, we have to think better. When this fucktion works we will be billionares and solve half of all world problems with out fantastic super-general bayesian neural network! And should my prediction turn out to not be right I think we're all better off taking Vincent up on his offer.
+
+        if self.use_bias:
+            self.bias = nn.Parameter(torch.zeros(out, device=self.device, dtype=self.dtype))
+        else:
+            self.register_parmeter("bias", None)
+
+        if self.dist == "normal":
+            self.distribution = torch.distributions.Normal
+            self.prior = torch.distributions.Normal(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
+                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale)
+        elif self.dist == "vmf":
+            self.distribution = VonMisesFisher
+            self.prior = HypersphericalUniform(out - 1)
+
+        # Fill weight with initial data
+        self.weight_loc.data = self.reparameterize(      ).sample()
+        self.weight_rho.data = self.reparameterize(loc=-3).sample()
+
+    def reparameterize(self, loc=None, scale=None):
+        if loc is None:
+            loc = self.prior_loc
+        if scale is None:
+            scale = self.prior_scale
+        if not isinstance(loc, torch.Tensor):
+            loc = torch.ones_like(self.weight_loc) * loc
+        if not isinstance(scale, torch.Tensor):
+            scale = torch.ones_like(self.weight_rho) * scale
+
+        return self.distribution(loc=loc, scale=scale)
 
     def forward(self, x):
-        weight, bias = self.sample()
+        weight_scale = torch.log1p(torch.exp(self.weight_rho))
+
+        self.weight_poste = self.reparameterize(loc=self.weight_loc, scale=weight_scale)
+        # self.weight_prior = self.reparameterize(prior=True)
+
+        weight = self.weight_poste.rsample()
+
+        """  # ! Using non-bayesian biases
+        if self.use_bias:
+            bias_scale = torch.log1p(torch.exp(self.bias_rho))
+
+            self.bias_poste = self.distribution(loc=self.bias_loc, scale=bias_scale)
+            self.bias_prior = self.distribution(prior=True)
+
+            bias = self.bias_poste.rsample()
+        else:
+            bias = None
 
         return F.linear(x, weight, bias)
+        """
+        return F.linear(x, weight, self.bias)
+
+    def kl_div(self):
+        kl = torch.distributions.kl.kl_divergence(self.weight_poste, self.prior)
+        """  # ! Using non-bayesian biases
+        if self.use_bias:
+            kl += torch.distributions.kl.kl_divergence(self.bias_poste, self.bias_prior)
+        """
+        return kl
+

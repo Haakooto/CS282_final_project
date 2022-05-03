@@ -1,19 +1,21 @@
 from BayesLinear import Linear as BayesLinear
 from torch import nn
+from torch.nn import functional as F
 import torch
 
 
 class FullyConnected(nn.Module):
     # Simple frequentist neural network
-    def __init__(self, *, features, classes, hiddens, nonlin="ReLU", use_bias=True):
+    def __init__(self, *, features, classes, hiddens, nonlin=nn.ReLU, use_bias=True):
         super().__init__()
 
-        self.act = eval(f"nn.{nonlin}")
+        self.activation = nonlin
         nodes = [features] + hiddens + [classes]
 
         layers = []
         for prev, next in zip(nodes[:-2], nodes[1:-1]):
-            layers += [nn.Linear(prev, next, bias=use_bias, dtype=torch.float), self.act()]
+            layers += [nn.Linear(prev, next, bias=use_bias,
+                                 dtype=torch.float), self.activation()]
 
         self.layers = nn.Sequential(*layers,
                                     nn.Linear(
@@ -29,61 +31,65 @@ class FullyConnected(nn.Module):
 
 class BayesFullyConnected(nn.Module):
     # simple bayesian neural network
-    def __init__(self, *, features, classes, hiddens, nonlin="ReLU", use_bias=True, prior=None):
+    def __init__(self, *, features, classes, hiddens, nonlin=nn.ReLU, prior=None, dtype=None, device=None):
         super().__init__()
+
+        if device is None:
+            self.device = torch.device("cpu")
+        if dtype is None:
+            self.dtype = torch.double
 
         self.total_kl_div = 0
         self.unfrozen = True
 
-        self.act = eval(f"nn.{nonlin}")  # activation function
+        if prior is None:
+            prior = {}
+        prior.setdefault("dist",     "normal")
+        prior.setdefault("loc",      0)
+        prior.setdefault("scale",    1)
+        prior.setdefault("use_bias", True)
+
+        self.activation = nonlin
+
         nodes = [features] + hiddens + [classes]
 
         layers = []
         for prev, next in zip(nodes[:-2], nodes[1:-1]):
-            layers += [BayesLinear(inn=prev,
+            layers += [BayesLinear(**prior,
+                                   inn=prev,
                                    out=next,
-                                   prior=prior,
-                                   kl_adder=self.add_kl_div,
-                                   use_bias=True,
+                                   device=self.device,
+                                   dtype=self.dtype,
                                    ),
-                       self.act(),
+                       self.activation(),
                        ]
 
         self.layers = nn.Sequential(*layers,
-                                    BayesLinear(inn=nodes[-2],
+                                    BayesLinear(**prior,
+                                                inn=nodes[-2],
                                                 out=nodes[-1],
-                                                prior=prior,
-                                                kl_adder=self.add_kl_div,
-                                                use_bias=True,
+                                                device=self.device,
+                                                dtype=self.dtype,
                                                 ),
                                     )
 
-    def forward(self, x, test=False):
+    def forward(self, x, train=False):
         for layer in self.layers:
             x = layer(x)
+
+        if train:
+            for layer in self.layers:
+                if hasattr(layer, "kl_div"):
+                    self.total_kl_div += layer.kl_div().sum(-1).mean()
         return x
 
-    def add_kl_div(self, kl_div):
+    def kl_reset(self):
         """
-        This function is passed along to the distribution class,
-        so every time it resamples, it adds to the total kl_div
-        by calling this.
-        """
-        self.total_kl_div += kl_div
-
-    def kl_reset(self, batches=1):
-        """
-        Retrns the kl_div and sets it to zero
+        Retrns the kl_div and resets it to zero
         """
         tmp = self.total_kl_div * self.unfrozen
         self.total_kl_div = 0
-        return tmp / batches
-
-    def freeze(self):
-        self.unfrozen = False
-        for layer in self.layers:
-            if isinstance(layer, BayesLinear):
-                layer.sample.unfrozen = False
+        return tmp
 
 
 BFC = BayesFullyConnected
