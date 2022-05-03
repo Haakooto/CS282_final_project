@@ -29,6 +29,8 @@ class HypersphericalUniform(torch.distributions.Distribution):
         self._dim = dim
         self.device = device
 
+        self._entropy = self.entropy()
+
     def sample(self, shape=torch.Size()):
         output = (
             torch.distributions.Normal(0, 1)

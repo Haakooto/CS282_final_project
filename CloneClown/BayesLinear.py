@@ -24,6 +24,7 @@ class Linear(nn.Module):
 
         # register parameters so pytorch can backprop
         self.weight_loc = nn.Parameter(torch.zeros((out, inn), device=self.device, dtype=self.dtype))
+        inn = inn if dist != "vmf" else 1  # the vmf only taked 1 in-feature for the scale, though shapes work out later to be same as before. Not sure why
         self.weight_rho = nn.Parameter(torch.zeros((out, inn), device=self.device, dtype=self.dtype))
 
         """ # ! Using non-bayesian biases
@@ -40,39 +41,37 @@ class Linear(nn.Module):
             self.register_parmeter("bias", None)
 
         # Setting distributions. The posterior is the untriggered distribution,
-        # while the unchanging prior is instancianted and ever remade
-        # TODO: Becuase the prior is unchanged, we can precompute the hyu entropy for kl calculation. Will be done later
+        # while the unchanging prior is instancianted and never remade
+        # TODO: Becuase the prior is unchanged, we can precompute the hyu entropy for kl calculation. Will be done later.
+        # ? Thanks, this saved me 2.6% of training time.
         if self.dist == "normal":
             self.distribution = torch.distributions.Normal
-            self.prior = torch.distributions.Normal(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
-                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale)
+            self.weight_prior = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
+                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                  )  # initialize once, then only use to calc kl after
         elif self.dist == "vmf":
             self.distribution = VonMisesFisher  # This is a very active debuggng area, I was unable to do this with vmf, and too late to figure out why
-            self.prior = HypersphericalUniform(out - 1)  # minus 1 because ¯\_(ツ)_/¯, This is what the authors did, so this is a possble debugging area
+            self.weight_prior = HypersphericalUniform(out - 1)  # minus 1 because ¯\_(ツ)_/¯, This is what the authors did, so this is a possble debugging area
+        else:
+            raise NotImplementedError
 
         # Fill weight with initial data
-        self.weight_loc.data = self.reparameterize(      ).sample()
-        self.weight_rho.data = self.reparameterize(loc=-3).sample()
+        self.weight_loc.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
+                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                 ).sample()
+        self.weight_rho.data = self.distribution(loc=torch.ones_like(self.weight_loc) * -3,  # -3 for small initial variance
+                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                 ).sample()
 
-    def reparameterize(self, loc=None, scale=None):
-        # default to prior if not provided, though this is only used in the initial reparameterization done at end of init
-        if loc is None:
-            loc = self.prior_loc
-        if scale is None:
-            scale = self.prior_scale
-        if not isinstance(loc, torch.Tensor):
-            loc = torch.ones_like(self.weight_loc) * loc
-        if not isinstance(scale, torch.Tensor):
-            scale = torch.ones_like(self.weight_rho) * scale
-
-        return self.distribution(loc=loc, scale=scale)
+        if self.dist == "vmf":  # The sampling above adds too many dimensions in last axis of weight_rho
+            self.weight_rho.data = self.weight_rho.data.mean(-1, keepdim=True)  # I quite arbitrarily average this to make shapes work. Its just initialisation, so what could be wrong?
 
     def forward(self, x):
         weight_scale = torch.log1p(torch.exp(self.weight_rho))  # still do this to ensure positive stds
 
-        self.weight_poste = self.reparameterize(loc=self.weight_loc, scale=weight_scale)  # save distribution as self.weight_pos, so we can calculate kl later
+        self.weight_posterior = self.distribution(loc=self.weight_loc, scale=weight_scale)  # save distribution as self.weight_pos, so we can calculate kl later
 
-        weight = self.weight_poste.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
+        weight = self.weight_posterior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
 
         """  # ! Using non-bayesian biases
         if self.use_bias:
@@ -90,7 +89,7 @@ class Linear(nn.Module):
         return F.linear(x, weight, self.bias)
 
     def kl_div(self):  # GUYS! we dont need to use out triangular wheel when torch already has a circular one
-        kl = torch.distributions.kl.kl_divergence(self.weight_poste, self.prior)
+        kl = torch.distributions.kl.kl_divergence(self.weight_posterior, self.weight_prior)
         """  # ! Using non-bayesian biases
         if self.use_bias:
             kl += torch.distributions.kl.kl_divergence(self.bias_poste, self.bias_prior)
