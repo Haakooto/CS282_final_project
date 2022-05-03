@@ -34,7 +34,7 @@ class VonMisesFisher(torch.distributions.Distribution):
     def stddev(self):
         return self.scale
 
-    def __init__(self, loc, scale, validate_args=None, k=1):
+    def __init__(self, loc, scale, validate_args=None, k=1, **kwargs):
         self.dtype = loc.dtype
         self.loc = loc
         self.scale = scale

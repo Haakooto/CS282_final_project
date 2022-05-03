@@ -11,7 +11,7 @@ And the model performs fucking great as such, and changing it back will make my 
 
 """
 class Linear(nn.Module):
-    def __init__(self, *, inn, out, loc=0, scale=1, dist="normal", device=None, dtype=None, use_bias=True):
+    def __init__(self, *, inn, out, loc=0, scale=1, dist="normal", dist_kwargs={}, device=None, dtype=None, use_bias=True):
         super().__init__()  # star in start enforcs you to use keyword arguments, and no implicit argument passing
 
         self.device = device
@@ -21,6 +21,9 @@ class Linear(nn.Module):
         self.prior_loc = loc
         self.prior_scale = scale
         self.dist = dist
+        self.dist_kwargs = dist_kwargs
+
+        self.history = {"mean": [], "std": []}
 
         # register parameters so pytorch can backprop
         self.weight_loc = nn.Parameter(torch.zeros((out, inn), device=self.device, dtype=self.dtype))
@@ -48,31 +51,41 @@ class Linear(nn.Module):
             self.distribution = torch.distributions.Normal
             self.weight_prior = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
                                                   scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                  **self.dist_kwargs,
                                                   )  # initialize once, then only use to calc kl after
         elif self.dist == "vmf":
             self.distribution = VonMisesFisher  # This is a very active debuggng area, I was unable to do this with vmf, and too late to figure out why
-            self.weight_prior = HypersphericalUniform(out - 1)  # minus 1 because ¯\_(ツ)_/¯, This is what the authors did, so this is a possble debugging area
+            self.weight_prior = HypersphericalUniform(out - 1,   # minus 1 because ¯\_(ツ)_/¯, This is what the authors did, so this is a possble debugging area
+                                                      device=self.device,
+                                                      )
         else:
             raise NotImplementedError
 
         # Fill weight with initial data
         self.weight_loc.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                 **self.dist_kwargs,
                                                  ).sample()
         self.weight_rho.data = self.distribution(loc=torch.ones_like(self.weight_loc) * -3,  # -3 for small initial variance
                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                 **self.dist_kwargs,
                                                  ).sample()
-
+        # print(self.weight_loc.size())
+        # self.weight_loc.data = self.weight_prior.sample()
+        # self.weight_rho.data = self.weight_prior.sample()
+        # print(self.weight_loc.size())
         if self.dist == "vmf":  # The sampling above adds too many dimensions in last axis of weight_rho
             self.weight_rho.data = self.weight_rho.data.mean(-1, keepdim=True)  # I quite arbitrarily average this to make shapes work. Its just initialisation, so what could be wrong?
 
     def forward(self, x):
         weight_scale = torch.log1p(torch.exp(self.weight_rho))  # still do this to ensure positive stds
 
-        self.weight_posterior = self.distribution(loc=self.weight_loc, scale=weight_scale)  # save distribution as self.weight_pos, so we can calculate kl later
+        self.weight_posterior = self.distribution(loc=self.weight_loc, scale=weight_scale, **self.dist_kwargs)  # save distribution as self.weight_pos, so we can calculate kl later
 
         weight = self.weight_posterior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
-
+        self.history["mean"].append(weight.mean())
+        self.history["std"].append(weight.std())
+        
         """  # ! Using non-bayesian biases
         if self.use_bias:
             bias_scale = torch.log1p(torch.exp(self.bias_rho))
