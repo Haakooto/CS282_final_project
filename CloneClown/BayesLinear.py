@@ -83,9 +83,9 @@ class Linear(nn.Module):
         self.weight_posterior = self.distribution(loc=self.weight_loc, scale=weight_scale, **self.dist_kwargs)  # save distribution as self.weight_pos, so we can calculate kl later
 
         weight = self.weight_posterior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
-        self.history["mean"].append(weight.mean())
-        self.history["std"].append(weight.std())
-        
+        # self.history["mean"].append(weight.mean())
+        # self.history["std"].append(weight.std())
+
         """  # ! Using non-bayesian biases
         if self.use_bias:
             bias_scale = torch.log1p(torch.exp(self.bias_rho))
