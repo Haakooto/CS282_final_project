@@ -68,7 +68,8 @@ class Linear(nn.Module):
 
     def forward(self, x):
         weight_scale = torch.log1p(torch.exp(self.weight_rho))  # still do this to ensure positive stds
-
+        print(weight_scale[0])
+        input(">>>")
         self.weight_posterior = self.distribution(loc=self.weight_loc, scale=weight_scale)  # save distribution as self.weight_pos, so we can calculate kl later
 
         weight = self.weight_posterior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good

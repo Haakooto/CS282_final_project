@@ -45,9 +45,9 @@ def get_nanotube_data(test_size=0.2, batch_size=20, target_label=None, scale=Tru
     if scale:
         # standard scaling
         X_train = (X_train - X_train.mean(axis=0)) / X_train.std(axis=0)
-        Y_train = (Y_train - Y_train.mean(axis=0)) / Y_train.std(axis=0)
+        # Y_train = (Y_train - Y_train.mean(axis=0)) / Y_train.std(axis=0)
         X_test = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0)
-        Y_test = (Y_test - Y_test.mean(axis=0)) / Y_test.std(axis=0)
+        # Y_test = (Y_test - Y_test.mean(axis=0)) / Y_test.std(axis=0)
 
     # Package data for easy training and testing
     train_loader = torch.utils.data.DataLoader(
