@@ -45,10 +45,11 @@ class BayesFullyConnected(nn.Module):
         # The default values are here. Scale of 1 works bad, .1 is good
         if prior is None:
             prior = {}
-        prior.setdefault("dist",     "normal")
-        prior.setdefault("loc",      0)
-        prior.setdefault("scale",    1)
-        prior.setdefault("use_bias", True)
+        prior.setdefault("dist",        "normal")
+        prior.setdefault("loc",         0)
+        prior.setdefault("scale",       1)
+        prior.setdefault("use_bias",    True)
+        prior.setdefault("dist_kwargs", {})
         self.prior = prior
 
         self.activation = nonlin
