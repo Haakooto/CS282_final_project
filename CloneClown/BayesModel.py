@@ -30,7 +30,9 @@ class FullyConnected(nn.Module):
 
 
 class BayesFullyConnected(nn.Module):
-    # simple bayesian neural network. Dude writing "simple" everywhere pisses me off.
+    # simple neural network using Bayesian layers.
+    # Dude writing "simple" everywhere pisses me off.
+    # Dude, a fully connected network is the most basic neural network architecture there is, this model has no fancy features what so ever. We dont use dropout or batchnorm, or anything we learned about in this course. The only thing we do is using Bayesian Layers, which is not a feature of the model itself, just the layers that comprise it. Therefore I call the model simple, but did not mean to imply that this also goes for the layers, which are absolutely not simple
     def __init__(self, *, features, classes, hiddens, nonlin=nn.ReLU, prior=None, dtype=None, device=None):
         super().__init__()
 
@@ -42,7 +44,7 @@ class BayesFullyConnected(nn.Module):
         self.total_kl_div = 0
 
         # Everything that has to do with the distribution is specified in this dict
-        # The default values are here. Scale of 1 works bad, .1 is good
+        # The default values are here. Scale of 1 works bad, .1 is good. (For gaussian priors this is)
         if prior is None:
             prior = {}
         prior.setdefault("dist",        "normal")
@@ -83,7 +85,8 @@ class BayesFullyConnected(nn.Module):
         if train:  # To reduce computation during testing, only calculate kl when nessissary
             for layer in self.layers:
                 if hasattr(layer, "kl_div"):  # this method is defined only for our BayesLinear
-                    self.total_kl_div += layer.kl_div().sum(-1).mean()  # not sure why the sum.mean ¯\_(ツ)_/¯
+                    # not sure why the sum.mean ¯\_(ツ)_/¯
+                    self.total_kl_div += layer.kl_div().sum(-1).mean()
         return x
 
     def kl_reset(self):
