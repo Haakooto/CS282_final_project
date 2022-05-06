@@ -30,7 +30,7 @@ class FullyConnected(nn.Module):
 
 
 class BayesFullyConnected(nn.Module):
-    # simple bayesian neural network
+    # simple bayesian neural network. Dude writing "simple" everywhere pisses me off.
     def __init__(self, *, features, classes, hiddens, nonlin=nn.ReLU, prior=None, dtype=None, device=None):
         super().__init__()
 

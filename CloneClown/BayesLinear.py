@@ -60,7 +60,7 @@ class Linear(nn.Module):
 
         # Fill weight with initial data
         self.weight_loc.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
-                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale,
+                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale*3,
                                                  **self.dist_kwargs,
                                                  ).sample()
         self.weight_rho.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_scale,  # -3 for small initial variance
@@ -89,7 +89,7 @@ class Linear(nn.Module):
         # print()
         self.posterior = self.distribution(loc=self.weight_loc, scale=weight_scale, **self.dist_kwargs)  # save distribution as self.weight_pos, so we can calculate kl later
 
-        weight = self.posterior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
+        weight = self.posterior.rsample() # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
         # print(weight.mean())
         # print(weight.std())
         # weight2 = self.prior.rsample()  # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
@@ -107,6 +107,6 @@ class Linear(nn.Module):
 
         return F.linear(x, weight, self.bias)
 
-    def kl_div(self):  # GUYS! we dont need to use out triangular wheel when torch already has a circular one
+    def kl_div(self):  # GUYS! we dont need to use out triangular wheel when torch already has a circular one. Well it still aint rollin' is it???
         return torch.distributions.kl.kl_divergence(self.posterior, self.prior)
 
