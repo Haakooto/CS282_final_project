@@ -1,0 +1,102 @@
+\documentclass[twocolumn,nofootinbib,nobalancelastpage,10pt]{revtex4-1}
+%\documentclass[rmp,preprint]{revtex4-1}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,bm}
+\usepackage[english]{babel}
+\usepackage{physics, amssymb}  % mathematical symbols (physics imports amsmath)
+\usepackage{float}
+\usepackage{upgreek}
+\usepackage{verbatim}
+\usepackage{mathpazo}
+\usepackage{siunitx}
+\usepackage{kantlipsum}
+\usepackage{sidenotes}
+\usepackage{currfile}
+\usepackage{bigints}
+\usepackage{xcolor}           % set colors
+\usepackage{hyperref}         % automagic cross-referencing (this is GODLIKE)
+\usepackage{tikz}             % draw figures manually
+\usepackage{listings}         % display code
+\usepackage{subfigure}        % imports a lot of cool and useful figure commands
+\usepackage{minted}
+\usepackage{booktabs}
+% \usepackage{subfig}        % Was making figure captions centered
+\usepackage{multirow}
+\usepackage{geometry}
+\usepackage{algorithm2e}
+\usepackage{amsmath}
+\usepackage{footmisc}
+
+
+
+\bibliographystyle{plain}
+\geometry{margin=1in}
+\hypersetup{
+    colorlinks=false,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\lstset{language=Python,
+	inputpath=,
+	backgroundcolor=\color{white!88!black},
+	basicstyle={\ttfamily\scriptsize},
+	commentstyle=\color{magenta},
+	morekeywords={True,False},
+	tabsize=4,
+	stringstyle=\color{green!55!black},
+	frame=single,
+	keywordstyle=\color{blue},
+	showstringspaces=false,
+	columns=fullflexible,
+	keepspaces=true
+}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+\graphicspath{{../figs/}}
+\newcommand{\includegraphicsmaybe}[2][]{\IfFileExists{../plots/#2}{\includegraphics[#1]{#2}}{\includegraphics[width=0.75\linewidth]{giffel.jpg}}}
+
+\renewcommand{\deg}{^{\circ}}
+\newcommand{\sn}{\sidenote}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\newcommand{\hksqrt}[2][]{\ \mathpalette\DHLhksqrt{[#1]{#2\,}}}
+\def\DHLhksqrt#1#2{\setbox0=\hbox{$#1\sqrt#2$}\dimen0=\ht0
+    \advance\dimen0-0.3\ht0
+    \setbox2=\hbox{\vrule height\ht0 depth -\dimen0}
+    {\box0\lower0.65pt\box2}}
+
+
+\begin{document}
+
+\title{Finding Mr Krabs: Simulating a wave function passing through slits}
+
+\author{}
+
+\affiliation{}
+
+\begin{abstract}
+\end{abstract}
+
+\date{\today}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Theory}
+
+\section{Methods}
+
+\section{Results and discussion}
+
+\section{Conclusion}
+
+
+%\clearpage
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
