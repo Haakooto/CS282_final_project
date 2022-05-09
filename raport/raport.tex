@@ -2,29 +2,62 @@
 %\documentclass[rmp,preprint]{revtex4-1}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-% \usepackage{NotesTeX}
-\usepackage{subfigure}
-\usepackage{tikz}
-\usetikzlibrary{arrows}
-\usepackage{multirow}
-\usepackage{listings}
-\usepackage{extarrows}
-\usepackage{parskip}
-\usepackage{eurosym}
-\usepackage{footmisc}
+\usepackage{graphicx,bm}
+\usepackage[english]{babel}
+\usepackage{physics, amssymb}  % mathematical symbols (physics imports amsmath)
+\usepackage{float}
+\usepackage{upgreek}
+\usepackage{verbatim}
+\usepackage{mathpazo}
+\usepackage{siunitx}
 \usepackage{kantlipsum}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
+\usepackage{sidenotes}
+\usepackage{currfile}
+\usepackage{bigints}
+\usepackage{xcolor}           % set colors
+\usepackage{hyperref}         % automagic cross-referencing (this is GODLIKE)
+\usepackage{tikz}             % draw figures manually
+\usepackage{listings}         % display code
+\usepackage{subfigure}        % imports a lot of cool and useful figure commands
+\usepackage{minted}
+\usepackage{booktabs}
+% \usepackage{subfig}        % Was making figure captions centered
+\usepackage{multirow}
+\usepackage{geometry}
+\usepackage{algorithm2e}
+\usepackage{amsmath}
+\usepackage{footmisc}
 
 
 
 \bibliographystyle{plain}
+\geometry{margin=1in}
+\hypersetup{
+    colorlinks=false,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
 
+\lstset{language=Python,
+	inputpath=,
+	backgroundcolor=\color{white!88!black},
+	basicstyle={\ttfamily\scriptsize},
+	commentstyle=\color{magenta},
+	morekeywords={True,False},
+	tabsize=4,
+	stringstyle=\color{green!55!black},
+	frame=single,
+	keywordstyle=\color{blue},
+	showstringspaces=false,
+	columns=fullflexible,
+	keepspaces=true
+}
 \renewcommand{\thesection}{\arabic{section}}
 \renewcommand{\thesubsection}{\arabic{subsection}}
 
 \graphicspath{{../figs/}}
-\newcommand{\includegraphicsmaybe}[2][]{\IfFileExists{../figs/#2}{\includegraphics[#1]{#2}}{\includegraphics[width=0.75\linewidth]{404.jpg}}}
+\newcommand{\includegraphicsmaybe}[2][]{\IfFileExists{../plots/#2}{\includegraphics[#1]{#2}}{\includegraphics[width=0.75\linewidth]{giffel.jpg}}}
 
 \renewcommand{\deg}{^{\circ}}
 \newcommand{\sn}{\sidenote}
@@ -38,9 +71,9 @@
 
 \begin{document}
 
-\title{A Note on Prior Selection in Bayesian Neural Networks}
+\title{Finding Mr Krabs: Simulating a wave function passing through slits}
 
-\author{Khachatur Mirijanyan, Leif-Martin Sæther Sunde, Håkon Olav Torvik}
+\author{}
 
 \affiliation{}
 
@@ -61,8 +94,9 @@
 
 \section{Conclusion}
 
-%\clearpage
 
+%\clearpage
+\bibliographystyle{plain}
 \bibliography{refs}
 
 \end{document}
