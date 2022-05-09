@@ -60,10 +60,10 @@ class Linear(nn.Module):
 
         # Fill weight with initial data
         self.weight_loc.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_loc,
-                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale*3,
+                                                 scale=torch.ones_like(self.weight_rho) * self.prior_scale,
                                                  **self.dist_kwargs,
                                                  ).sample()
-        self.weight_rho.data = self.distribution(loc=torch.ones_like(self.weight_loc) * self.prior_scale,  # -3 for small initial variance
+        self.weight_rho.data = self.distribution(loc=torch.ones_like(self.weight_loc) * -3,  # -3 for small initial variance
                                                  scale=torch.ones_like(self.weight_rho) * self.prior_scale,
                                                  **self.dist_kwargs,
                                                  ).sample()
@@ -76,15 +76,23 @@ class Linear(nn.Module):
 
         self.posterior = self.distribution(loc=self.weight_loc, scale=weight_scale, **self.dist_kwargs)  # save distribution as self.weight_pos, so we can calculate kl later
 
-        weight = self.posterior.rsample() # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
+        self.weight = self.posterior.rsample() # simply sample weights straight from distribution, instead of going complex stuff like before. Life is good
         if self.record:
-            self.history["mean"].append(weight.mean())
-            self.history["std"].append(weight.std())
-            self.history["all"].append(weight)
-            self.history["first"].append(weight[0, 0])
+            self.history["mean"].append(self.weight.mean())
+            self.history["std"].append(self.weight.std())
+            self.history["all"].append(self.weight)
+            self.history["first"].append(self.weight[0, 0])
 
-        return F.linear(x, weight, self.bias)
+        return F.linear(x, self.weight, self.bias)
+
+    # def kl_div(self):
+    #     if self.dist != "normal":
+    #         return torch.distributions.kl.kl_divergence(self.posterior, self.prior)
+    #     else:
+    #         return self.kl_loss()
 
     def kl_div(self):
-        return torch.distributions.kl.kl_divergence(self.posterior, self.prior)
+        log_prior = self.prior.log_prob(self.weight)
+        log_pq = self.posterior.log_prob(self.weight)
+        return (log_pq - log_prior).sum()
 
