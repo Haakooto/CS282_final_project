@@ -1,0 +1,68 @@
+\documentclass[twocolumn,nofootinbib,nobalancelastpage,10pt]{revtex4-1}
+%\documentclass[rmp,preprint]{revtex4-1}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% \usepackage{NotesTeX}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{extarrows}
+\usepackage{parskip}
+\usepackage{eurosym}
+\usepackage{footmisc}
+\usepackage{kantlipsum}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+
+\bibliographystyle{plain}
+
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+\graphicspath{{../figs/}}
+\newcommand{\includegraphicsmaybe}[2][]{\IfFileExists{../figs/#2}{\includegraphics[#1]{#2}}{\includegraphics[width=0.75\linewidth]{404.jpg}}}
+
+\renewcommand{\deg}{^{\circ}}
+\newcommand{\sn}{\sidenote}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\newcommand{\hksqrt}[2][]{\ \mathpalette\DHLhksqrt{[#1]{#2\,}}}
+\def\DHLhksqrt#1#2{\setbox0=\hbox{$#1\sqrt#2$}\dimen0=\ht0
+    \advance\dimen0-0.3\ht0
+    \setbox2=\hbox{\vrule height\ht0 depth -\dimen0}
+    {\box0\lower0.65pt\box2}}
+
+
+\begin{document}
+
+\title{A Note on Prior Selection in Bayesian Neural Networks}
+
+\author{Khachatur Mirijanyan, Leif-Martin Sæther Sunde, Håkon Olav Torvik}
+
+\affiliation{}
+
+\begin{abstract}
+\end{abstract}
+
+\date{\today}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Theory}
+
+\section{Methods}
+
+\section{Results and discussion}
+
+\section{Conclusion}
+
+%\clearpage
+
+\bibliography{refs}
+
+\end{document}
