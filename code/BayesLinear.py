@@ -86,10 +86,7 @@ class Linear(nn.Module):
         return F.linear(x, self.weight, self.bias)
 
     # def kl_div(self):
-    #     if self.dist != "normal":
-    #         return torch.distributions.kl.kl_divergence(self.posterior, self.prior)
-    #     else:
-    #         return self.kl_loss()
+#         return torch.distributions.kl.kl_divergence(self.posterior, self.prior)
 
     def kl_div(self):
         log_prior = self.prior.log_prob(self.weight)
